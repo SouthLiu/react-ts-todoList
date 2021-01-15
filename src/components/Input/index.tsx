@@ -21,8 +21,7 @@ function Inputs(props: IProps) {
 
     addTodo({
       id: new Date().getTime(),
-      contant: value,
-      completed: false
+      contant: value
     })
     inputRef.current.setValue('')
   }

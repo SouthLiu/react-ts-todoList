@@ -1,31 +1,51 @@
-import React, { useState, useCallback } from 'react';
+import React, { useCallback, useReducer, useEffect } from 'react';
 import Input from './components/Input';
 import List from './components/List'
-import { ITodo } from './components/typings';
+import { ACTION_TYPE, ITodo } from './components/typings';
 import './App.css';
+import { todoReducer } from './reduex';
+
+function init(initTodoList: ITodo[]) {
+  return {
+    todoList: initTodoList
+  }
+}
 
 function App() {
-  const [todoList, setTodoList] = useState<ITodo[]>([])
+  const [state, dispatch] = useReducer(todoReducer, [], init)
+
+  useEffect(() => {
+    const todoList = JSON.parse(localStorage.getItem('todoList') || '[]')
+    dispatch({
+      type: ACTION_TYPE.INIT_TODO,
+      payload: todoList
+    })
+  }, [])
+
+  useEffect(() => {
+    localStorage.setItem('todoList', JSON.stringify(state.todoList || '[]'))
+  }, [state.todoList])
+
   const addTodo = useCallback(
     (data: ITodo): void => {
-      setTodoList(todoList => [...todoList, data])
+      dispatch({
+        type: ACTION_TYPE.ADD_TODO,
+        payload: data
+      })
     }, []
   )
 
   const delTodo = useCallback((id: number): void => {
-    const newTodo: ITodo[] = Object.assign([], todoList)
-    todoList && todoList.forEach((item, index) => {
-      if (item.id === id) {
-        newTodo.splice(index, 1)
-      }
-    })
-    setTodoList(newTodo)
-  }, [todoList])
+      dispatch({
+        type: ACTION_TYPE.DEL_TODO,
+        payload: id
+      })
+  }, [])
 
   return (
     <>
       <Input addTodo={addTodo} />
-      <List todoList={todoList} delTodo={delTodo} />
+      <List todoList={state.todoList} delTodo={delTodo} />
     </>
   )
 }
